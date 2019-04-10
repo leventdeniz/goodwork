@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use App\Contracts\Searchable;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class Task extends Model
 {
-    use LogsActivity;
+    use LogsActivity, Searchable;
+
+    protected static function huntableFields()
+    {
+        return ['name', 'notes'];
+    }
 
     protected $with = ['subtasks'];
 
@@ -17,7 +23,7 @@ class Task extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'assigned_to', 'notes', 'due_on', 'taskable_type', 'taskable_id', 'status_id', 'related_to', 'parent_id',
+        'name', 'assigned_to', 'notes', 'due_on', 'taskable_type', 'taskable_id', 'status_id', 'related_to', 'parent_id', 'cycle_id',
     ];
 
     protected $casts = [

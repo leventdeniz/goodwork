@@ -12,6 +12,7 @@ return [
 
     'lang' => [
         'ar'    => 'Arabic',
+        'da'    => 'Danish',
         'de'    => 'German',
         'en'    => 'English',
         'es-ES' => 'Spanish (Spain)',
@@ -20,8 +21,12 @@ return [
         'fi'    => 'Finnish',
         'fr-FR' => 'French (France)',
         'hi'    => 'Hindi (India)',
+        'hr'    => 'Croatian',
         'id'    => 'Bahasa (Indonesia)',
         'it-IT' => 'Italian (Italy)',
+        'jp'    => 'Japanese',
+        'la'    => 'Latin',
+        'ms'    => 'Malay',
         'nl-NL' => 'Dutch (Netherlands)',
         'pl'    => 'Polish',
         'pt-BR' => 'Portuguese (Brazil)',

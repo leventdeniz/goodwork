@@ -32,12 +32,12 @@ import { faBell, faCircle } from '@fortawesome/free-solid-svg-icons'
 
 export default {
   data: () => ({
-    user: navbar.user,
     token: Laravel.csrfToken,
-    url: navbar.navUrl,
+    url: navUrl,
     notificationShown: false,
     notifications: [],
     unreadNotification: false,
+    user: user,
     faBell,
     faCircle
   }),

@@ -35,13 +35,13 @@ Route::post('register/{token}', 'Auth\RegisterController@confirmNewRegistration'
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', 'HomeController@index')->name('home');
 
+    Route::get('search', 'SearchController@index');
+
     /**********************************
         Project
     **********************************/
 
-    Route::get('projects', function () {
-        return abort(404);
-    });
+    Route::get('projects', 'ProjectController@index');
 
     Route::post('projects', 'ProjectController@store')->middleware('can:create,App\Models\Project');
 
@@ -53,9 +53,7 @@ Route::group(['middleware' => 'auth'], function () {
         Team
     **********************************/
 
-    Route::get('teams', function () {
-        return abort(404);
-    });
+    Route::get('teams', 'TeamController@index');
 
     Route::post('teams', 'TeamController@store')->middleware('can:create,App\Models\Team');
 
@@ -67,9 +65,7 @@ Route::group(['middleware' => 'auth'], function () {
         Office
      **********************************/
 
-    Route::get('offices', function () {
-        return abort(404);
-    });
+    Route::get('offices', 'OfficeController@index');
 
     Route::post('offices', 'OfficeController@store')->middleware('can:create,App\Models\Office');
 
@@ -119,6 +115,8 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::post('messages', 'MessageController@store');
 
+    Route::put('messages/{message}', 'MessageController@update');
+
     Route::delete('messages/{message}', 'MessageController@delete')->middleware('can:delete,message');
 
     /**********************************
@@ -141,7 +139,11 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('tasks/{task}', 'TaskController@show');
 
+    Route::put('tasks/{task}', 'TaskController@update')->middleware('can:update,task');
+
     Route::delete('tasks/{task}', 'TaskController@delete')->middleware('can:delete,task');
+
+    Route::put('tasks/{task}/statuses', 'TaskStatusController@update')->middleware('can:update,task');
 
     /**********************************
         Tags
@@ -202,9 +204,20 @@ Route::group(['middleware' => 'auth'], function () {
     /**********************************
         Status
     **********************************/
+
     Route::get('statuses', 'StatusController@index');
 
     Route::post('statuses', 'StatusController@store');
+
+    /**********************************
+        Github Service
+    **********************************/
+
+    Route::get('services/github/repos', 'GithubRepoController@index');
+
+    Route::get('services/github/connected-repos', 'ConnectedGithubRepoController@index');
+
+    Route::post('services/github/connected-repos', 'ConnectedGithubRepoController@store');
 });
 
     /**********************************
@@ -228,7 +241,11 @@ Route::group(['middleware' => ['auth', 'permission:view admin page'], 'prefix' =
 
     Route::get('activities', 'ActivityController@index');
 
-    Route::get('check-for-update', 'AboutController@checkForUpdate');
+    Route::get('services', 'ServiceController@index');
 
-    Route::get('update-software', 'AboutController@updateSoftware');
+    Route::post('services', 'ServiceController@store');
+
+    Route::put('services/{service}', 'ServiceController@update');
+
+    Route::get('check-for-update', 'AboutController@checkForUpdate');
 });

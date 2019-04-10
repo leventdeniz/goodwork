@@ -23,25 +23,29 @@
     </script>
     @if (!Auth::guest())
     <script>
-        window.navbar = {!! json_encode([
-            'user' => Auth::user(),
-            'navUrl' => ['site' => url('/'), 'logout' => url('/logout')]
+        let user = {!! json_encode(Auth::user()) !!}
+        let navUrl = {!! json_encode([
+            'site' => url('/'),
+            'logout' => url('/logout')
         ]) !!};
     </script>
     @endif
 </head>
 <body class="bg-grey-lighter">
-    <div id="app">
-        <div class="h-1" style="background: linear-gradient(to right, #4DC0B5, #3490DC);"></div>
-        @if (!Auth::guest())
-        <navbar></navbar>
-        <notification-popup></notification-popup>
-        <message-box></message-box>
-        @endif
+    <main>
+        <div id="app">
+            <div class="h-1" style="background: linear-gradient(to right, #4DC0B5, #3490DC);"></div>
+            @if (!Auth::guest())
+            <loading-modal></loading-modal>
+            <navbar></navbar>
+            <notification-popup></notification-popup>
+            <message-box></message-box>
+            @endif
 
 
-        {{ $slot }}
-    </div>
+            {{ $slot }}
+        </div>
+    </main>
 
     <script src="{{ asset('/js/manifest.js') }}"></script>
     <script src="{{ asset('/js/vendor.min.js') }}"></script>

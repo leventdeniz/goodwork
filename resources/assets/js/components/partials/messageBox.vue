@@ -7,14 +7,18 @@
     <div class="py-2 bg-grey-lighter">
       <div class="text-sm text-center text-grey-dark">Send direct meesage</div>
       <div class="flex flex-row justify-center px-4 py-2">
-        <div @click="selectUserMessage(user)" v-for="user in users" v-if="user.id !== authUser.id">
+        <div @click="selectUserMessage(user)" v-for="user in users" v-if="user.id !== authUser.id" class="relative">
           <img class="w-10 h-10 rounded-full md:mr-2 cursor-pointer" :title="user.name" :src="generateUrl(user.avatar)">
+          <div :class="[user.online ? 'bg-teal' : 'bg-grey']" :title="[user.online ? 'online' : 'offline']" class="absolute w-4 h-4 rounded-full border-2 border-white mr-1 pin-r pin-b"></div>
         </div>
       </div>
     </div>
 
     <div id="message-box" class="h-50-vh overflow-y-auto">
       <div v-if="selectedUser.id">
+        <div v-if="messages.length < 1" class="text-grey-dark text-sm text-center" style="margin-top: 20vh;">
+          You've no message interaction with this user yet. Say "Hi" to {{ selectedUser.name }}
+        </div>
         <message v-for="(message, index) in messages" :key="index" :message="message" :user="authUser" :index="index" @deleted="deleteMessage"></message>
       </div>
       <div v-else class="text-grey-dark text-sm text-center" style="margin-top: 20vh;">
@@ -37,21 +41,23 @@
     </div>
   </div>
 
-  <div @click="hideMessageBox" class="h-screen w-screen fixed pin bg-grey-darkest opacity-25"></div>
+  <div @click="hideMessageBox" class="h-screen w-screen fixed pin bg-grey-darkest opacity-25 z-10"></div>
 </div>
 </template>
 
 <script>
 import message from './message'
+
 export default {
   components: {message},
   data: () => ({
+    authUser: user,
     isDisabled: true,
     message: '',
     messages: [],
+    nextPageUrl: null,
     messageBoxShown: false,
     messageTextareaHeight: 'auto',
-    authUser: navbar.user,
     title: '',
     unreadMessage: 0,
     users: [],
@@ -81,6 +87,12 @@ export default {
     }
   },
   methods: {
+    scrollToBottom () {
+      this.$nextTick(() => {
+        var messagesContainer = this.$el.querySelector('#message-box')
+        messagesContainer.scrollTop = messagesContainer.lastElementChild.scrollHeight
+      })
+    },
     showMessageBox () {
       this.messageBoxShown = true
     },
@@ -93,7 +105,7 @@ export default {
       }
       if (e.shiftKey) {
         this.message = this.message + '\n'
-      } else {
+      } else if (this.message.length > 0) {
         var msg = this.message
         this.message = ''
         axios.post('/messages', {
@@ -103,7 +115,7 @@ export default {
         })
           .then((response) => {
             if (response.data.status === 'success') {
-              response.data.message.user = navbar.user
+              response.data.message.user = user
               this.messages.push(response.data.message)
             }
           })
@@ -122,7 +134,9 @@ export default {
         }
       })
         .then((response) => {
-          this.messages = response.data.messages.reverse()
+          this.messages = response.data.messages.data.reverse()
+          this.nextPageUrl = response.data.messages.next_page_url
+          this.scrollToBottom()
         })
         .catch((error) => {
           console.log(error)
@@ -132,6 +146,13 @@ export default {
       this.messages.splice(index, 1)
     },
     listen () {
+      Echo.join('global')
+        .here(users => {
+          this.users = this.users.map(user => {
+            user.online = users.includes(user.id)
+            return user
+          })
+        })
       Echo.join('user.' + this.authUser.id)
         .listen('MessageCreated', event => {
           event.message.user = event.user
@@ -143,6 +164,7 @@ export default {
             document.title = '(' + this.unreadMessage + ') ' + this.title
           }
           this.messages.push(event.message)
+          this.scrollToBottom()
         })
     },
     clearTitleNotification () {

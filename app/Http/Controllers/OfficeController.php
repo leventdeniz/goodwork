@@ -8,6 +8,11 @@ use App\Http\Requests\StoreOfficeRequest;
 
 class OfficeController extends Controller
 {
+    public function index()
+    {
+        abort(404);
+    }
+
     public function show(Office $office)
     {
         $office->load('members');
@@ -19,6 +24,7 @@ class OfficeController extends Controller
     {
         try {
             $office = $repository->store($request->all());
+            $office->members()->save(auth()->user());
             $office->load('members');
             create_permissions($office);
 
