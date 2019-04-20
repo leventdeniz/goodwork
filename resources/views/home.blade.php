@@ -2,9 +2,12 @@
 
 @slot('title') Home Page @endslot
 
-<home :data="{{ json_encode($data) }}"></home>
+<home></home>
 
 @slot('script')
+<script>
+    let data = <?php echo json_encode($data); ?>
+</script>
 <script>
     window.errors = <?php echo json_encode($errors->toArray()); ?>
 </script>

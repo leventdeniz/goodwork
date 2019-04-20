@@ -6,7 +6,7 @@
         <font-awesome-icon :icon="faCog"></font-awesome-icon>
       </span>
       <div v-if="dropdownMenuShown" class="relative">
-        <ul class="list-reset bg-white rounded shadow-lg py-2 absolute pin-r mt-4 text-base text-left font-normal whitespace-no-wrap">
+        <ul class="list-reset bg-white rounded shadow-lg py-2 absolute pin-r mt-4 text-base text-left font-normal whitespace-no-wrap z-10">
           <li class="px-4 py-2 hover:bg-grey-light cursor-pointer">
             <a href="#" class="no-underline text-grey-dark" @click.prevent="showMembersListModal">
               Show All Members
@@ -19,15 +19,29 @@
       </div>
     </div>
 
-    <!-- Add Member Form -->
+    <div class="text-grey-dark flex flex-row justify-center items-center">
+      <span class="text-lg">
+        Cycle: 
+      </span>
+      <span class="p-2 ml-2 bg-grey-lightest shadow rounded cursor-pointer text-sm text-teal-darker">
+        {{startDate}} - {{endDate}}
+      </span>
+    </div>
+
+  <!-- Modals for dropdown menu -->
+    <members-list-modal resourceType="office" :resourceId="office.id" :show="membersListModalShown" :members="office.members" @close="closeMembersListModal" />
+
     <addMemberForm v-if="addMemberFormShown" @close="closeAddMemberForm" resourceType="office" :resource="office" @addMember="addMember"></addMemberForm>
+
+    <show-github-repo entityType="team" :entityId="team.id" v-if="githubRepoModalShown" @close-github-repo-modal="closeGithubRepoModal"></show-github-repo>
+  <!-- Modals for dropdown menu -->
 
     <div class="h-16 flex flex-row justify-center items-center px-2">
       <span @click="showAddMemberForm" class="bg-white shadow w-8 h-8 rounded-full text-teal hover:cursor-pointer text-center p-2">
         <font-awesome-icon :icon="faPlus"></font-awesome-icon>
       </span>
-      <a v-for="(member, index) in office.members" v-if="index < 5" :href="'/users/' + member.username" class="pl-2">
-        <img :src="generateUrl(member.avatar)" class="rounded-full w-8 h-8 mr-1">
+      <a v-for="(member, index) in office.members" :href="'/users/' + member.username" class="pl-2">
+        <profile-card :user="member"></profile-card>
       </a>
       <span v-if="office.members.length > 5" class="bg-grey-lighter border-teal border p-2 rounded-full">{{ office.members.length - 5 }}+</span>
     </div>
@@ -43,12 +57,11 @@
       <!-- <taskBoard resourceType="projects" :resource="project"></taskBoard>
       <activity resourceType="projects" :resource="project"></activity> -->
     </div>
-
-    <members-list-modal :show="membersListModalShown" :members="office.members" @close="closeMembersListModal" />
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import taskBoard from './../partials/taskBoard.vue'
 import discussionBoard from './../partials/discussionBoard.vue'
 import messagesBoard from './../partials/messagesBoard.vue'
@@ -56,7 +69,9 @@ import eventBoard from './../partials/eventBoard.vue'
 import fileBoard from './../partials/fileBoard.vue'
 import activity from './../partials/activity.vue'
 import addMemberForm from './../partials/addMemberForm.vue'
+import showGithubRepo from './../partials/showGithubRepo.vue'
 import membersListModal from './../partials/membersListModal.vue'
+import profileCard from './../partials/profileCard.vue'
 import tabMenu from './../partials/tabMenu.vue'
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus'
 import { faCog } from '@fortawesome/free-solid-svg-icons/faCog'
@@ -71,13 +86,15 @@ export default {
     activity,
     addMemberForm,
     membersListModal,
+    profileCard,
     tabMenu,
+    showGithubRepo
   },
-  props: ['office'],
   data: () => ({
     addMemberFormShown: false,
     active: 'tasks',
     dropdownMenuShown: false,
+    githubRepoModalShown: false,
     membersListModalShown: false,
     faPlus,
     faCog
@@ -88,6 +105,23 @@ export default {
     if (tool !== null && tabs.indexOf(tool) !== -1) {
       this.active = tool
     }
+  },
+  computed: {
+    startDate: function () {
+      if (this.office.current_cycle) {
+        return window.luxon.DateTime.fromISO(this.office.current_cycle.start_date).toLocaleString(window.luxon.DateTime.DATE_MED)
+      }
+      return 'Set start date'
+    },
+    endDate: function () {
+      if (this.office.current_cycle) {
+        return window.luxon.DateTime.fromISO(this.office.current_cycle.end_date).toLocaleString(window.luxon.DateTime.DATE_MED)
+      }
+      return 'Set end date'
+    },
+    ...mapState({
+      office: state => state.office
+    })
   },
   methods: {
     showAddMemberForm () {
@@ -125,6 +159,12 @@ export default {
     },
     closeDropdownMenu () {
       this.dropdownMenuShown = false
+    },
+    showGithubRepoModal () {
+      this.githubRepoModalShown = true
+    },
+    closeGithubRepoModal () {
+      this.githubRepoModalShown = false
     }
   }
 }
